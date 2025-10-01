@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= title %></title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+        border-bottom: 3px solid #4caf50;
+        padding-bottom: 10px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input[type="text"],
+      input[type="password"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+      textarea {
+        min-height: 300px;
+        resize: vertical;
+        font-family: Arial, sans-serif;
+      }
+      .btn-container {
+        margin-top: 20px;
+        text-align: center;
+      }
+      button {
+        padding: 10px 30px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .btn-cancel {
+        background-color: #999;
+      }
+      .btn-cancel:hover {
+        background-color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+
+    <form id="writeForm" method="POST" action="/board/write" novalidate>
+      <div class="form-group">
+        <label>작성자 ID:</label>
+        <input type="text" name="creator_id" id="creator_id" required />
+      </div>
+
+      <div class="form-group">
+        <label>제목:</label>
+        <input type="text" name="title" id="title" required />
+      </div>
+
+      <div class="form-group">
+        <label>내용:</label>
+        <textarea name="content" id="content" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>비밀번호:</label>
+        <input
+          type="password"
+          name="passwd"
+          id="passwd"
+          required
+          placeholder="게시글 수정/삭제시 필요합니다"
+        />
+      </div>
+
+      <div class="btn-container">
+        <button type="submit">등록</button>
+        <button type="button" class="btn-cancel" id="cancelBtn">취소</button>
+      </div>
+    </form>
+
+    <script>
+      $(document).ready(function () {
+        // Form submit validation
+        $("#writeForm").submit(function (e) {
+          // creator_id check
+          var creatorId = $("#creator_id").val().trim();
+          if (creatorId === "") {
+            e.preventDefault();
+            alert("작성자 ID를 입력하세요.");
+            $("#creator_id").val("").focus();
+            return false;
+          }
+
+          // title check
+          var title = $("#title").val().trim();
+          if (title === "") {
+            e.preventDefault();
+            alert("제목을 입력하세요.");
+            $("#title").val("").focus();
+            return false;
+          }
+
+          // content check
+          var content = $("#content").val().trim();
+          if (content === "") {
+            e.preventDefault();
+            alert("내용을 입력해 주세요.");
+            $("#content").val("").focus();
+            return false;
+          }
+
+          // passwd check
+          var passwd = $("#passwd").val().trim();
+          if (passwd === "") {
+            e.preventDefault();
+            alert("비밀번호를 입력하세요.");
+            $("#passwd").val("").focus();
+            return false;
+          }
+
+          // confirm submission
+          if (confirm("게시글을 등록하시겠습니까?")) {
+            return true;
+          } else {
+            e.preventDefault();
+            return false;
+          }
+        });
+
+        // Cancel button with confirmation if form has content
+        $("#cancelBtn").click(function () {
+          var hasContent =
+            $("#creator_id").val().trim() !== "" ||
+            $("#title").val().trim() !== "" ||
+            $("#content").val().trim() !== "" ||
+            $("#passwd").val().trim() !== "";
+
+          if (hasContent) {
+            if (confirm("작성 중인 내용이 있습니다. 정말 취소하시겠습니까?")) {
+              window.location.href = "/board/";
+            }
+          } else {
+            window.location.href = "/board/";
+          }
+        });
+
+        // Input validation feedback on blur event for all fields
+        $("#creator_id, #title, #content, #passwd").blur(function () {
+          if ($(this).val().trim() === "") {
+            $(this).css("border-color", "red");
+            $(this).attr("placeholder", "필수 입력 항목입니다");
+          } else {
+            $(this).css("border-color", "#ddd");
+            $(this).removeAttr("placeholder");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= title %></title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+        border-bottom: 3px solid #4caf50;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input[type="text"],
+      input[type="password"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+      textarea {
+        min-height: 300px;
+        resize: vertical;
+        font-family: Arial, sans-serif;
+      }
+      .btn-container {
+        margin-top: 20px;
+        text-align: center;
+      }
+      button {
+        padding: 10px 30px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .btn-cancel {
+        background-color: #999;
+      }
+      .btn-cancel:hover {
+        background-color: #777;
+      }
+      .info-text {
+        color: #666;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+
+    <form id="updateForm" method="POST" action="/board/update" novalidate>
+      <input type="hidden" name="idx" value="<%= post.idx %>" />
+
+      <div class="form-group">
+        <label>작성자 ID:</label>
+        <input
+          type="text"
+          name="creator_id"
+          id="creator_id"
+          value="<%= post.creator_id %>"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>제목:</label>
+        <input type="text" name="title" id="title" value="<%= post.title %>" />
+      </div>
+
+      <div class="form-group">
+        <label>내용:</label>
+        <textarea name="content" id="content"><%= post.content %></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>비밀번호:</label>
+        <input
+          type="password"
+          name="passwd"
+          id="passwd"
+          placeholder="기존 비밀번호를 입력하세요"
+        />
+        <div class="info-text">
+          ※ 게시글 수정을 위해 기존 비밀번호를 입력해주세요.
+        </div>
+      </div>
+
+      <div class="btn-container">
+        <button type="submit">수정완료</button>
+        <button type="button" class="btn-cancel" id="cancelBtn">취소</button>
+      </div>
+    </form>
+
+    <script>
+      $(document).ready(function () {
+        // Form submit validation
+        $("#updateForm").submit(function (e) {
+          // creator_id check
+          var creatorId = $("#creator_id").val().trim();
+          if (creatorId === "") {
+            e.preventDefault();
+            alert("작성자 ID를 입력하세요.");
+            $("#creator_id").focus();
+            return false;
+          }
+
+          // title check
+          var title = $("#title").val().trim();
+          if (title === "") {
+            e.preventDefault();
+            alert("제목을 입력하세요.");
+            $("#title").focus();
+            return false;
+          }
+
+          // content check
+          var content = $("#content").val().trim();
+          if (content === "") {
+            e.preventDefault();
+            alert("내용을 입력해 주세요.");
+            $("#content").focus();
+            return false;
+          }
+
+          // password check
+          var passwd = $("#passwd").val().trim();
+          if (passwd === "") {
+            e.preventDefault();
+            alert("비밀번호를 입력하세요.");
+            $("#passwd").focus();
+            return false;
+          }
+
+          // confirm before submitting
+          if (confirm("게시글을 수정하시겠습니까?")) {
+            return true;
+          } else {
+            e.preventDefault();
+            return false;
+          }
+        });
+
+        // Redirect to read page on cancel
+        $("#cancelBtn").click(function () {
+          window.location.href = "/board/read/<%= post.idx %>";
+        });
+
+        // Cancel button with confirmation if form has content
+        $("#creator_id, #title, #content, #passwd").blur(function () {
+          if ($(this).val().trim() === "") {
+            $(this).css("border-color", "red");
+          } else {
+            $(this).css("border-color", "#4caf50");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
