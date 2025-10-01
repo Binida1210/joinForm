@@ -1,10 +1,16 @@
 var mysql = require("mysql");
 var connection = require("../config/database");
 
+// Function to get post by idx (for checking image before delete)
+exports.getPostByIdx = function (postIdx, callback) {
+  var sql = "SELECT idx, image_path, passwd FROM board WHERE idx = ?";
+  connection.query(sql, [postIdx], callback);
+};
+
 // Function to verify password before delete
-exports.verifyPassword = function (id, password, callback) {
+exports.verifyPassword = function (postIdx, password, callback) {
   var sql = "SELECT passwd FROM board WHERE idx = ?";
-  connection.query(sql, [id], function (err, results) {
+  connection.query(sql, [postIdx], function (err, results) {
     if (err) {
       return callback(err, null);
     }
@@ -18,7 +24,7 @@ exports.verifyPassword = function (id, password, callback) {
 };
 
 // Function to delete post
-exports.deletePost = function (id, callback) {
+exports.deletePost = function (postIdx, callback) {
   var sql = "DELETE FROM board WHERE idx = ?";
-  connection.query(sql, [id], callback);
+  connection.query(sql, [postIdx], callback);
 };

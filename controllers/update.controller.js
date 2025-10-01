@@ -1,17 +1,25 @@
 var updateModel = require("../models/update.model");
+var multer = require("multer");
+var path = require("path");
+var fs = require("fs");
+
+// Multer configuration
+var upload = require("../config/multer");
 
 // Render update form with existing data
 exports.updateForm = function (req, res) {
-  var postId = req.query.idx;
+  var postIdx = req.query.idx || req.params.id;
 
-  // Fetch existing post data by ID
-  updateModel.getPostById(postId, function (err, results) {
+  updateModel.getPostByIdx(postIdx, function (err, results) {
     if (err) {
       console.error("Error fetching post:", err);
       return res.status(500).send("Database error");
     }
 
-    // Render the update form with existing post data
+    if (results.length === 0) {
+      return res.status(404).send("Post not found");
+    }
+
     res.render("update", {
       title: "게시글 수정",
       post: results[0],
@@ -19,19 +27,20 @@ exports.updateForm = function (req, res) {
   });
 };
 
+exports.uploadMiddleware = upload.single("image_path");
+
 // Handle update submission
 exports.updateData = function (req, res) {
-  var postId = req.body.idx;
+  var postIdx = req.body.idx;
   var inputPassword = req.body.passwd;
 
   // First verify password
-  updateModel.verifyPassword(postId, inputPassword, function (err, isValid) {
+  updateModel.verifyPassword(postIdx, inputPassword, function (err, isValid) {
     if (err) {
       console.error("Password verification error:", err);
       return res.status(500).send("Database error");
     }
 
-    // If password is incorrect redirect back with alert
     if (!isValid) {
       return res.send(`
         <script>
@@ -41,26 +50,63 @@ exports.updateData = function (req, res) {
       `);
     }
 
-    // Password is correct, proceed with update
+    // Handle image update
+    var newImagePath = null;
+    var removeImage = req.body.remove_image === "1";
+    var currentImagePath = req.body.current_image_path;
+
+    if (req.file) {
+      newImagePath = req.file.filename; // New image uploaded
+
+      // Delete old image
+      if (currentImagePath) {
+        var oldImageFullPath = path.join(
+          __dirname,
+          "../public/uploads/",
+          currentImagePath
+        );
+        fs.unlink(oldImageFullPath, function (err) {
+          if (err) console.log("Error deleting old image:", err);
+        });
+      }
+    } else if (removeImage) {
+      newImagePath = null; // Remove image
+
+      // Delete old image
+      if (currentImagePath) {
+        var oldImageFullPath = path.join(
+          __dirname,
+          "../public/uploads/",
+          currentImagePath
+        );
+        fs.unlink(oldImageFullPath, function (err) {
+          if (err) console.log("Error deleting image:", err);
+        });
+      }
+    } else {
+      // Keep current image
+      newImagePath = currentImagePath;
+    }
+
+    // Update post data
     var updatedData = {
       creator_id: req.body.creator_id,
       title: req.body.title,
       content: req.body.content,
       passwd: req.body.passwd,
+      image_path: newImagePath,
     };
 
-    // Update the post data in the database
-    updateModel.updateData(postId, updatedData, function (err, result) {
+    updateModel.updateData(postIdx, updatedData, function (err, result) {
       if (err) {
         console.error("Update error:", err);
         return res.status(500).send("Database error");
       }
 
-      // Redirect to the updated post view with success alert
       res.send(`
         <script>
           alert('게시글이 수정되었습니다.');
-          location.href = '/board/read/${postId}';
+          location.href = '/board/read/${postIdx}';
         </script>
       `);
     });

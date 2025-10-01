@@ -1,25 +1,46 @@
 var mysql = require("mysql");
 var connection = require("../config/database");
 
-// Function to get a post by its ID for updating
-exports.getPostById = function (id, callback) {
+/**
+ * Get post by idx for updating
+ * @param {Number} postIdx - Post index (primary key)
+ * @param {Function} callback - Callback function
+ */
+exports.getPostByIdx = function (postIdx, callback) {
   var sql =
-    "SELECT idx, creator_id, title, content, passwd, hit FROM board WHERE idx = ?";
-  connection.query(sql, [id], callback);
+    "SELECT idx, creator_id, title, content, passwd, hit, image_path FROM board WHERE idx = ?";
+  connection.query(sql, [postIdx], callback);
 };
 
-// Function to update post data
-exports.updateData = function (id, data, callback) {
+/**
+ * Update post data
+ * @param {Number} postIdx - Post index (primary key)
+ * @param {Object} data - Updated post data
+ * @param {Function} callback - Callback function
+ */
+exports.updateData = function (postIdx, data, callback) {
   var sql =
-    "UPDATE board SET creator_id = ?, title = ?, content = ?, passwd = ? WHERE idx = ?";
-  var params = [data.creator_id, data.title, data.content, data.passwd, id];
+    "UPDATE board SET creator_id = ?, title = ?, content = ?, passwd = ?, image_path = ? WHERE idx = ?";
+  var params = [
+    data.creator_id,
+    data.title,
+    data.content,
+    data.passwd,
+    data.image_path,
+    postIdx,
+  ];
   connection.query(sql, params, callback);
 };
 
-// Function to verify password before update
-exports.verifyPassword = function (id, password, callback) {
+/**
+ * Verify password before update
+ * @param {Number} postIdx - Post index (primary key)
+ * @param {String} password - Password to verify
+ * @param {Function} callback - Callback function
+ */
+exports.verifyPassword = function (postIdx, password, callback) {
   var sql = "SELECT passwd FROM board WHERE idx = ?";
-  connection.query(sql, [id], function (err, results) {
+  connection.query(sql, [postIdx], function (err, results) {
     if (err) {
       return callback(err, null);
     }

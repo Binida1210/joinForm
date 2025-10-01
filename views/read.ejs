@@ -5,18 +5,66 @@
     <title><%= title %></title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
+      /* Base layout */
       body {
         font-family: Arial, sans-serif;
         max-width: 800px;
         margin: 50px auto;
         padding: 20px;
       }
+
+      /* Student Info Header */
+      .student-header {
+        position: fixed;
+        top: 0;
+        right: 20px;
+        background: linear-gradient(135deg, #2196f3, #1976d2);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+      .student-icon {
+        width: 35px;
+        height: 35px;
+        background: #1976d2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      .student-info {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.3;
+      }
+      .student-id {
+        font-weight: bold;
+        font-size: 13px;
+      }
+      .student-name {
+        font-size: 12px;
+        opacity: 0.9;
+      }
+
       h1 {
-        color: #333;
-        border-bottom: 3px solid #4caf50;
+        color: #1976d2;
+        border-bottom: 3px solid #2196f3;
         padding-bottom: 10px;
         margin-bottom: 30px;
+        margin-top: 60px; /* Add space for fixed header */
       }
+
+      /* Post content */
       .post-header {
         background-color: #f8f9fa;
         padding: 20px;
@@ -54,9 +102,43 @@
         min-height: 300px;
         line-height: 1.8;
         white-space: pre-wrap;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         font-size: 16px;
       }
+
+      /* Image display */
+      .post-image-section {
+        margin-bottom: 20px;
+      }
+      .image-label {
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .post-image {
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background-color: #ffffff;
+      }
+      .post-image img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 4px;
+      }
+      .no-image {
+        color: #999;
+        font-style: italic;
+        padding: 40px 0;
+        text-align: center;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+      }
+
+      /* Action buttons */
       .post-footer {
         border-top: 1px solid #dee2e6;
         padding-top: 20px;
@@ -71,14 +153,13 @@
         cursor: pointer;
         border: none;
         font-weight: normal;
-        transition: all 0.3s ease;
       }
       .btn-update {
-        background-color: #4caf50;
+        background-color: #2196f3;
         color: white;
       }
       .btn-update:hover {
-        background-color: #45a049;
+        background-color: #1976d2;
       }
       .btn-delete {
         background-color: #dc3545;
@@ -95,11 +176,11 @@
         background-color: #5a6268;
       }
 
-      /* Modal styles */
+      /* Delete modal */
       .modal {
         display: none;
         position: fixed;
-        z-index: 1000;
+        z-index: 999;
         left: 0;
         top: 0;
         width: 100%;
@@ -141,7 +222,7 @@
         box-sizing: border-box;
       }
 
-      /* 반응형 디자인 */
+      /* Responsive design */
       @media (max-width: 600px) {
         .post-meta {
           flex-direction: column;
@@ -156,6 +237,15 @@
     </style>
   </head>
   <body>
+    <!-- Student Info Header -->
+    <div class="student-header">
+      <div class="student-icon">B</div>
+      <div class="student-info">
+        <div class="student-id">2021202502</div>
+        <div class="student-name">Tran Xuan Binh</div>
+      </div>
+    </div>
+
     <h1><%= title %></h1>
 
     <div class="post-header">
@@ -178,6 +268,21 @@
 
     <!-- 게시글 본문 -->
     <div class="post-body"><%= post.content %></div>
+
+    <!-- 첨부 이미지 섹션 -->
+    <div class="post-image-section">
+      <div class="image-label">첨부 이미지:</div>
+      <% if (post.image_path && post.image_path.trim() !== '') { %>
+      <div class="post-image">
+        <img
+          src='<%= process.env.BASE_URL + "/uploads/" + post.image_path %>'
+          alt="첨부 이미지"
+        />
+      </div>
+      <% } else { %>
+      <div class="no-image">첨부된 이미지가 없습니다</div>
+      <% } %>
+    </div>
 
     <!-- 게시글 푸터 -->
     <div class="post-footer">
@@ -226,19 +331,19 @@
 
     <script>
       $(document).ready(function () {
-        // confirm before deleting
+        // Show delete modal
         $("#deleteBtn").click(function () {
           $("#deleteModal").show();
           $("#deletePassword").focus();
         });
 
-        // cancel delete
+        // Close modal
         $("#cancelDelete").click(function () {
           $("#deleteModal").hide();
           $("#deletePassword").val("");
         });
 
-        // confirm before going back to list
+        // Close modal on outside click
         $(window).click(function (event) {
           if (event.target.id === "deleteModal") {
             $("#deleteModal").hide();
@@ -246,18 +351,22 @@
           }
         });
 
-        // confirm before deleting
+        // Submit delete form with confirmation
         $("#confirmDelete").click(function () {
           var password = $("#deletePassword").val().trim();
-
           if (password === "") {
-            alert("비밀번호를 입력하세요.");
             $("#deletePassword").focus();
-            return false;
+            return;
           }
-
           if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
             $("#deleteForm").submit();
+          }
+        });
+
+        // Submit on Enter key
+        $("#deletePassword").keypress(function (e) {
+          if (e.which === 13) {
+            $("#confirmDelete").click();
           }
         });
       });

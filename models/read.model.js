@@ -1,15 +1,22 @@
 var mysql = require("mysql");
 var connection = require("../config/database");
 
-// Function to get a post by its ID
-exports.getPostById = function (id, callback) {
-  var sql =
-    "SELECT idx, creator_id, content, title, hit FROM board WHERE idx = ?";
-  connection.query(sql, [id], callback);
-};
+/**
+ * Get post by ID and increment hit count
+ * @param {Number} postIdx - Post index (primary key)
+ * @param {Function} callback - Callback function
+ */
+exports.getPostByIdx = function (postIdx, callback) {
+  // Increment hit count first
+  var updateHitSql = "UPDATE board SET hit = hit + 1 WHERE idx = ?";
+  connection.query(updateHitSql, [postIdx], function (err) {
+    if (err) {
+      console.error("Error updating hit count:", err);
+    }
 
-// Function to increase the hit count of a post
-exports.increaseHit = function (id, callback) {
-  var sql = "UPDATE board SET hit = hit + 1 WHERE idx = ?";
-  connection.query(sql, [id], callback);
+    // Fetch post data with image filename
+    var selectSql =
+      "SELECT idx, creator_id, title, content, passwd, hit, image_path FROM board WHERE idx = ?";
+    connection.query(selectSql, [postIdx], callback);
+  });
 };
