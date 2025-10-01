@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title><%= title %></title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,6 +41,10 @@
     .title-link:hover {
       color: #4CAF50;
       text-decoration: underline;
+    }
+    .btn{
+      cursor: pointer;
+      border: none;
     }
     .btn-write {
       display: inline-block;
@@ -102,7 +107,22 @@
     </tbody>
   </table>
   
-  <a href="/board/write" class="btn-write">글쓰기</a>
-  <a href="/" class="btn-home">홈으로</a>
+  <button class="btn btn-write">글쓰기</button>
+  <button class="btn btn-home">홈으로</button>
+
+  <script>
+
+    $(document).ready(function() {
+      // Navigate to write form when "글쓰기" button is clicked
+      $(".btn-write").click(function() {
+        window.location.href = "/board/write";
+      });
+
+      // Navigate to home page when "홈으로" button is clicked
+      $(".btn-home").click(function() {
+        window.location.href = "/";
+      });
+    });
+  </script>
 </body>
 </html>

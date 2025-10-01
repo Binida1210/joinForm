@@ -6,6 +6,7 @@ var listController = require("../controllers/list.controller");
 var writeController = require("../controllers/write.controller");
 var readController = require("../controllers/read.controller");
 var updateController = require("../controllers/update.controller");
+var deleteController = require("../controllers/delete.controller");
 
 router.get("/", listController.list); // Get all list
 router.get("/list/1", listController.getListFirst); // Get first list item
@@ -20,5 +21,7 @@ router.get("/update", updateController.updateForm); // Render update form
 router.post("/update", multer().none(), (req, res) => {
   updateController.updateData(req, res);
 }); // Handle update submission
+
+router.post("/delete", deleteController.deleteData);
 
 module.exports = router;

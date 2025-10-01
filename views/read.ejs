@@ -65,7 +65,7 @@
       .btn {
         display: inline-block;
         padding: 10px 20px;
-        margin: 0 10px;
+        margin: 0 5px;
         text-decoration: none;
         border-radius: 4px;
         cursor: pointer;
@@ -80,12 +80,65 @@
       .btn-update:hover {
         background-color: #45a049;
       }
+      .btn-delete {
+        background-color: #dc3545;
+        color: white;
+      }
+      .btn-delete:hover {
+        background-color: #c82333;
+      }
       .btn-list {
         background-color: #6c757d;
         color: white;
       }
       .btn-list:hover {
         background-color: #5a6268;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 5px;
+        width: 400px;
+        max-width: 90%;
+      }
+      .modal-header {
+        margin-bottom: 20px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+      .modal-body {
+        margin-bottom: 20px;
+      }
+      .modal-footer {
+        text-align: right;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
       }
 
       /* 반응형 디자인 */
@@ -96,7 +149,7 @@
         }
         .btn {
           display: block;
-          margin: 10px auto;
+          margin: 5px auto;
           width: 150px;
         }
       }
@@ -105,7 +158,6 @@
   <body>
     <h1><%= title %></h1>
 
-    <!-- 게시글 헤더 -->
     <div class="post-header">
       <div class="post-title"><%= post.title %></div>
       <div class="post-meta">
@@ -133,27 +185,80 @@
         <input type="hidden" name="idx" value="<%= post.idx %>" />
         <button type="submit" class="btn btn-update">글 수정</button>
       </form>
+      <button type="button" class="btn btn-delete" id="deleteBtn">
+        글 삭제
+      </button>
       <a href="/board/" class="btn btn-list">목록으로</a>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">게시글 삭제</div>
+        <div class="modal-body">
+          <form id="deleteForm" method="POST" action="/board/delete">
+            <input type="hidden" name="idx" value="<%= post.idx %>" />
+            <div class="form-group">
+              <label>비밀번호를 입력하세요:</label>
+              <input
+                type="password"
+                name="passwd"
+                id="deletePassword"
+                placeholder="비밀번호"
+                required
+              />
+            </div>
+            <p style="color: #dc3545; font-size: 14px">
+              ※ 삭제된 게시글은 복구할 수 없습니다.
+            </p>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-list" id="cancelDelete">
+            취소
+          </button>
+          <button type="button" class="btn btn-delete" id="confirmDelete">
+            삭제
+          </button>
+        </div>
+      </div>
     </div>
 
     <script>
       $(document).ready(function () {
-        // 글 수정 확인
-        $("form").submit(function (e) {
-          if (!confirm("게시글을 수정하시겠습니까?")) {
-            e.preventDefault();
-            return false;
-          }
-          return true;
+        // confirm before deleting
+        $("#deleteBtn").click(function () {
+          $("#deleteModal").show();
+          $("#deletePassword").focus();
         });
 
-        // 목록으로 이동 확인
-        $(".btn-list").click(function (e) {
-          if (!confirm("목록으로 돌아가시겠습니까?")) {
-            e.preventDefault();
+        // cancel delete
+        $("#cancelDelete").click(function () {
+          $("#deleteModal").hide();
+          $("#deletePassword").val("");
+        });
+
+        // confirm before going back to list
+        $(window).click(function (event) {
+          if (event.target.id === "deleteModal") {
+            $("#deleteModal").hide();
+            $("#deletePassword").val("");
+          }
+        });
+
+        // confirm before deleting
+        $("#confirmDelete").click(function () {
+          var password = $("#deletePassword").val().trim();
+
+          if (password === "") {
+            alert("비밀번호를 입력하세요.");
+            $("#deletePassword").focus();
             return false;
           }
-          return true;
+
+          if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+            $("#deleteForm").submit();
+          }
         });
       });
     </script>
